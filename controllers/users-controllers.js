@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const User = require('../models/user');
 const HttpError = require('../models/http-error');
@@ -172,9 +173,50 @@ const getFollowings = async (req, res, next) => {
   res.json({ followings: userWithFollowings.followings.map(following => following.toObject({ getters: true })) })
 }
 
+/* followUser  */
+const followUser = async (req, res, next) => {
+  const followerId = req.params.uid;
+  const followingId = req.body.following;
+
+  let follower;
+  try {
+    follower = await User.findById(followerId);
+  } catch (err) {
+    const error = HttpError('Could not follow the given user, try again later', 500);
+    next(error);
+  }
+
+  if (!follower) {
+    const error = HttpError('Could not follow the given user.', 404);
+    return next(error);
+  }
+
+  let following;
+  try {
+    following = await User.findById(followingId);
+  } catch (err) {
+    const error = new HttpError('Could not follow the given user, try again later', 500);
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await follower.followings.push(following);
+    await following.followers.push(follower);
+    await following.save({ session: sess });
+    await follower.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    const error = new HttpError('Following failed, please try again', 500);
+    return next(error);
+  }
+  res.status(201).json({ msg: 'Success' });
+}
 
 exports.signup = signup;
 exports.login = login;
 exports.getUsers = getUsers;
 exports.getFollowers = getFollowers;
 exports.getFollowings = getFollowings;
+exports.followUser = followUser;

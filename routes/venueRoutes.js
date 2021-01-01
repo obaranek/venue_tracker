@@ -1,10 +1,11 @@
 const express = require('express');
 const { check } = require('express-validator');
-
-const venuesControllers = require('../controllers/venues-controllers');
-
 const router = express.Router();
 
+const venuesControllers = require('../controllers/venues-controllers');
+const checkAuth = require('../middleware/check-auth');
+
+router.use(checkAuth);
 
 router.get('/:uid', venuesControllers.getVenueByUserId);
 

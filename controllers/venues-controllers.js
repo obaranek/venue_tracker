@@ -67,7 +67,6 @@ const getVenueByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  console.log(userWithVenue.venue);
   if (!userWithVenue) {
     res.json({ venue: null });
   } else {

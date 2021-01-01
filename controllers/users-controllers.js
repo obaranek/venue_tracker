@@ -44,7 +44,7 @@ const signup = async (req, res, next) => {
     password: hashedPassword,
     followings: [],
     followers: [],
-    at: null
+    venue: null
   })
 
   let token;

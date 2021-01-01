@@ -34,6 +34,8 @@ router.post('/:uid/leave', venuesControllers.leaveVenue);
 
 router.post('/:uid/follow', venuesControllers.followVenue);
 
+router.post('/:uid/unfollow', venuesControllers.unfollowVenue);
+
 // router.delete('/:vid');
 
 module.exports = router;

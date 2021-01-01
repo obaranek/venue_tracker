@@ -24,7 +24,4 @@ router.get('/', usersControllers.getUsers);
 
 //router.use(checkAuth);
 
-
-//router.post('/:uid/unfollow', usersControllers.unfollowVenue);
-
 module.exports = router;

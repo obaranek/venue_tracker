@@ -1,10 +1,8 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 
 const User = require('../models/user');
-const Venue = require('../models/venue')
 const HttpError = require('../models/http-error');
 
 /*Sign Up*/
@@ -121,7 +119,6 @@ const login = async (req, res, next) => {
   })
 }
 
-/* getUsers */
 const getUsers = async (req, res, next) => {
   let users;
   try {
@@ -132,7 +129,6 @@ const getUsers = async (req, res, next) => {
   }
   res.json({ users: users.map(user => user.toObject({ getters: true })) });
 }
-
 
 exports.signup = signup;
 exports.login = login;

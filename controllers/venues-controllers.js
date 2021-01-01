@@ -15,12 +15,12 @@ const followVenue = async (req, res, next) => {
   try {
     follower = await User.findById(followerId);
   } catch (err) {
-    const error = HttpError('Could not follow the given user, try again later', 500);
+    const error = HttpError('Could not follow the given venue, try again later', 500);
     next(error);
   }
 
   if (!follower) {
-    const error = HttpError('Could not follow the given user.', 404);
+    const error = HttpError('Could not follow the given venue.', 404);
     return next(error);
   }
 
@@ -28,7 +28,12 @@ const followVenue = async (req, res, next) => {
   try {
     following = await Venue.findById(venueId);
   } catch (err) {
-    const error = new HttpError('Could not follow the given user, try again later', 500);
+    const error = new HttpError('Could not follow the given venue, try again later', 500);
+    return next(error);
+  }
+
+  if (follower.followings.find(following => venueId === following.toString())) {
+    const error = new HttpError('You are already following this venue', 500);
     return next(error);
   }
 
@@ -261,7 +266,6 @@ Current availability: ${venue.max - visitorsCount} / ${venue.max}`
   res.status(201).json({ msg: `Leaving ${venue.name} success` });
 }
 
-/* getFollowers */
 const getFollowers = async (req, res, next) => {
   const venueId = req.params.vid;
 
@@ -281,6 +285,52 @@ const getFollowers = async (req, res, next) => {
   res.json({ followers: venueWithFollowers.followers.map(follower => follower.toObject({ getters: true })) })
 }
 
+const unfollowVenue = async (req, res, next) => {
+  const unfollowerId = req.params.uid;
+  const venueId = req.body.venue;
+
+  let unfollower;
+  try {
+    unfollower = await User.findById(unfollowerId);
+  } catch (err) {
+    const error = HttpError('Could not follow the given user, try again later', 500);
+    next(error);
+  }
+
+  if (!unfollower) {
+    const error = new HttpError('this user does not exit', 404);
+    return next(error);
+  }
+
+  let unfollowing;
+  try {
+    unfollowing = await Venue.findById(venueId);
+  } catch (err) {
+    const error = new HttpError('Could not follow the given venue, try again later', 500);
+    return next(error);
+  }
+
+  if (!unfollower.followings.find(following => venueId === following.toString())) {
+    const error = new HttpError('You are not following this venue', 500);
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    unfollower.followings.pull(unfollowing);
+    unfollowing.followers.pull(unfollower);
+    await unfollowing.save({ session: sess });
+    await unfollower.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    const error = new HttpError('Following failed, please try again', 500);
+    return next(error);
+  }
+  res.status(201).json({ msg: 'Success' });
+}
+
+
 
 exports.getVenueByUserId = getVenueByUserId;
 exports.createVenue = createVenue;
@@ -288,3 +338,4 @@ exports.enterVenue = enterVenue;
 exports.getFollowers = getFollowers;
 exports.leaveVenue = leaveVenue;
 exports.followVenue = followVenue;
+exports.unfollowVenue = unfollowVenue;

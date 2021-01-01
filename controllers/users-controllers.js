@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const User = require('../models/user');
+const Venue = require('../models/venue')
 const HttpError = require('../models/http-error');
 
 /*Sign Up*/
@@ -43,7 +44,6 @@ const signup = async (req, res, next) => {
     email,
     password: hashedPassword,
     followings: [],
-    followers: [],
     venue: null
   })
 
@@ -133,50 +133,10 @@ const getUsers = async (req, res, next) => {
   res.json({ users: users.map(user => user.toObject({ getters: true })) });
 }
 
-/* getFollowers */
-const getFollowers = async (req, res, next) => {
-  const userId = req.params.uid;
-
-  let userWithFollowers;
-  try {
-    userWithFollowers = await User.findById(userId).populate('followers');
-  } catch (err) {
-    const error = new HttpError('Fetching followers failed, please try again later', 500);
-    return next(error);
-  }
-
-  if (!userWithFollowers || userWithFollowers.followers.length === 0) {
-    const error = new HttpError('No followers found for this user');
-    return next(error);
-  }
-
-  res.json({ followers: userWithFollowers.followers.map(follower => follower.toObject({ getters: true })) })
-}
-
-/* getFollowings */
-const getFollowings = async (req, res, next) => {
-  const userId = req.params.uid;
-
-  let userWithFollowings;
-  try {
-    userWithFollowings = await User.findById(userId).populate('followings');
-  } catch (err) {
-    const error = new HttpError('Fetching followings failed, please try again later', 500);
-    return next(error);
-  }
-
-  if (!userWithFollowings || userWithFollowings.followings.length === 0) {
-    const error = new HttpError('No followings found for this user');
-    return next(error);
-  }
-
-  res.json({ followings: userWithFollowings.followings.map(following => following.toObject({ getters: true })) })
-}
-
-/* followUser  */
-const followUser = async (req, res, next) => {
+/* followVenue */
+const followVenue = async (req, res, next) => {
   const followerId = req.params.uid;
-  const followingId = req.body.following;
+  const venueId = req.body.venue;
 
   let follower;
   try {
@@ -193,7 +153,7 @@ const followUser = async (req, res, next) => {
 
   let following;
   try {
-    following = await User.findById(followingId);
+    following = await Venue.findById(venueId);
   } catch (err) {
     const error = new HttpError('Could not follow the given user, try again later', 500);
     return next(error);
@@ -202,8 +162,8 @@ const followUser = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await follower.followings.push(following);
-    await following.followers.push(follower);
+    follower.followings.push(following);
+    following.followers.push(follower);
     await following.save({ session: sess });
     await follower.save({ session: sess });
     await sess.commitTransaction();
@@ -217,6 +177,4 @@ const followUser = async (req, res, next) => {
 exports.signup = signup;
 exports.login = login;
 exports.getUsers = getUsers;
-exports.getFollowers = getFollowers;
-exports.getFollowings = getFollowings;
-exports.followUser = followUser;
+exports.followVenue = followVenue;

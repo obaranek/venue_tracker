@@ -23,6 +23,7 @@
     "express-validator": "^6.9.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.9",
-    "mongoose-unique-validator": "^2.0.3"
+    "mongoose-unique-validator": "^2.0.3",
+    "nodemailer": "^6.4.17"
   }
 }

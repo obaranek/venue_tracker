@@ -1,29 +1,37 @@
 const express = require('express');
+const { check } = require('express-validator');
 
 const venuesControllers = require('../controllers/venues-controllers');
 
 const router = express.Router();
 
 
-/*
- * returns a JSON object with the the venue the current user is at
-*/
-// router.get('/users/uid', venuesControllers.getVenueByUserId);
+router.get('/:uid', venuesControllers.getVenueByUserId);
 
-// /*
-//  * returns a JSON object with the nearby venues if an address is given
-//  * otherwise returns all the venues
-// */
+router.get('/:vid/followers', venuesControllers.getFollowers);
+
 // router.get('/', venuesControllers.getVenuesByLocation);
 
-// /*
-//  *Creates a venue
-// */
-// router.post('/', venuesControllers.createVenue);
+router.post('/create',
+  [
+    check('name')
+      .not()
+      .isEmpty(),
+    check('address')
+      .not()
+      .isEmpty(),
+    check('max')
+      .not()
+      .isEmpty()
+      .isNumeric()
+  ],
+  venuesControllers.createVenue
+);
 
-// /*
-//  * deletes the venue associated with the given id
-// */
+router.post('/:uid/enter', venuesControllers.enterVenue);
+
+// router.post('/:uid/leave', venuesControllers.leaveVenue);
+
 // router.delete('/:vid');
 
 module.exports = router;

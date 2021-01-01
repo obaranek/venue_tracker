@@ -30,7 +30,9 @@ router.post('/create',
 
 router.post('/:uid/enter', venuesControllers.enterVenue);
 
-// router.post('/:uid/leave', venuesControllers.leaveVenue);
+router.post('/:uid/leave', venuesControllers.leaveVenue);
+
+router.post('/:uid/follow', venuesControllers.followVenue);
 
 // router.delete('/:vid');
 

@@ -133,48 +133,7 @@ const getUsers = async (req, res, next) => {
   res.json({ users: users.map(user => user.toObject({ getters: true })) });
 }
 
-/* followVenue */
-const followVenue = async (req, res, next) => {
-  const followerId = req.params.uid;
-  const venueId = req.body.venue;
-
-  let follower;
-  try {
-    follower = await User.findById(followerId);
-  } catch (err) {
-    const error = HttpError('Could not follow the given user, try again later', 500);
-    next(error);
-  }
-
-  if (!follower) {
-    const error = HttpError('Could not follow the given user.', 404);
-    return next(error);
-  }
-
-  let following;
-  try {
-    following = await Venue.findById(venueId);
-  } catch (err) {
-    const error = new HttpError('Could not follow the given user, try again later', 500);
-    return next(error);
-  }
-
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    follower.followings.push(following);
-    following.followers.push(follower);
-    await following.save({ session: sess });
-    await follower.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    const error = new HttpError('Following failed, please try again', 500);
-    return next(error);
-  }
-  res.status(201).json({ msg: 'Success' });
-}
 
 exports.signup = signup;
 exports.login = login;
 exports.getUsers = getUsers;
-exports.followVenue = followVenue;

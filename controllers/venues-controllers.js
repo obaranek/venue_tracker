@@ -101,9 +101,14 @@ const createVenue = async (req, res, next) => {
     return next(err);
   }
 
+  let location = {
+    type: 'Point',
+    coordinates: [coordinates.lng, coordinates.lat]
+  }
+
   let venueDuplicate;
   try {
-    venueDuplicate = await Venue.findOne({ coordinates: coordinates });
+    venueDuplicate = await Venue.findOne({ location });
   } catch (err) {
     const error = new HttpError('Could not create venue, please try again', 500);
     return next(error);
@@ -117,7 +122,7 @@ const createVenue = async (req, res, next) => {
   const createdVenue = new Venue({
     name,
     address,
-    coordinates,
+    location,
     followers: [],
     visitors: [],
     max
@@ -340,12 +345,12 @@ const unfollowVenue = async (req, res, next) => {
   res.status(201).json({ msg: 'Success' });
 }
 
-const getNearbyVenues = (req, res, next) => {
+const getNearbyVenues = async (req, res, next) => {
   const venueId = req.params.vid;
 
   let venue;
   try {
-    venue = Venue.findById(venueId);
+    venue = await Venue.findById(venueId);
   } catch (err) {
     const error = new HttpError('Could not retrieve nearby venues', 500);
     return next(error);
@@ -357,19 +362,30 @@ const getNearbyVenues = (req, res, next) => {
   }
 
   const query = {
-    location:
-    {
-      $near:
+    $and: [
       {
-        $geometry: { type: "Point", coordinates: venue.coordinates },
-        $maxDistance: 1000
+        location: {
+          $near: {
+            $maxDistance: 1000,
+            $geometry: {
+              type: "Point",
+              coordinates: venue.location.coordinates
+            }
+          }
+        }
       }
-    }
+    ]
   }
 
-  const venues = venue.find(query);
-  console.log(venues);
-  res.json({ venues: venues });
+  let nearbyVenues = [];
+  try {
+    nearbyVenues = await Venue.find(query);
+  } catch (err) {
+    const error = new HttpError('Could not find nearby venues, try again later', 500);
+    return next(error);
+  }
+  nearbyVenues = nearbyVenues.map(v => v.toObject({ getters: true }));
+  res.json(nearbyVenues.filter(v => v.id !== venue.id));
 }
 
 exports.getVenueByUserId = getVenueByUserId;

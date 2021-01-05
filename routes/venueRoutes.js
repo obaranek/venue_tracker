@@ -3,15 +3,17 @@ const { check } = require('express-validator');
 const router = express.Router();
 
 const venuesControllers = require('../controllers/venues-controllers');
-const checkAuth = require('../middleware/check-auth');
+//const checkAuth = require('../middleware/check-auth');
 
-router.use(checkAuth);
+router.get('/', venuesControllers.getVenues);
+
+//router.use(checkAuth);
 
 router.get('/:uid', venuesControllers.getVenueByUserId);
 
 router.get('/:vid/followers', venuesControllers.getFollowers);
 
-// router.get('/', venuesControllers.getVenuesByLocation);
+router.get('/:vid/nearby', venuesControllers.getNearbyVenues);
 
 router.post('/create',
   [

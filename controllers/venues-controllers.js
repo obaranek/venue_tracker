@@ -7,6 +7,17 @@ const HttpError = require('../models/http-error');
 const getCoordsForAddress = require('../util/location');
 const mailer = require('../util/mailer');
 
+const getVenues = async (req, res, next) => {
+  let venues;
+  try {
+    venues = await Venue.find({});
+  } catch (err) {
+    const error = HttpError('Fetching users failed, try again later', 500);
+    return next(error);
+  }
+  res.json({ venues: venues.map(user => user.toObject({ getters: true })) });
+}
+
 const followVenue = async (req, res, next) => {
   const followerId = req.params.uid;
   const venueId = req.body.venue;
@@ -329,7 +340,37 @@ const unfollowVenue = async (req, res, next) => {
   res.status(201).json({ msg: 'Success' });
 }
 
+const getNearbyVenues = (req, res, next) => {
+  const venueId = req.params.vid;
 
+  let venue;
+  try {
+    venue = Venue.findById(venueId);
+  } catch (err) {
+    const error = new HttpError('Could not retrieve nearby venues', 500);
+    return next(error);
+  }
+
+  if (!venue) {
+    const error = new HttpError('Could find associated venue for the given Id', 500);
+    return next(error);
+  }
+
+  const query = {
+    location:
+    {
+      $near:
+      {
+        $geometry: { type: "Point", coordinates: venue.coordinates },
+        $maxDistance: 1000
+      }
+    }
+  }
+
+  const venues = venue.find(query);
+  console.log(venues);
+  res.json({ venues: venues });
+}
 
 exports.getVenueByUserId = getVenueByUserId;
 exports.createVenue = createVenue;
@@ -338,3 +379,5 @@ exports.getFollowers = getFollowers;
 exports.leaveVenue = leaveVenue;
 exports.followVenue = followVenue;
 exports.unfollowVenue = unfollowVenue;
+exports.getNearbyVenues = getNearbyVenues;
+exports.getVenues = getVenues;

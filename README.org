@@ -1,0 +1,85 @@
+* Description
+Venue Tracker is a project developed as a back-end for a platform to notify users about the availability of venues by email. Users have the ability to follow venues which allows them to get updates of the availabilty of venues.
+
+* Run the backend server
+- git clone https://github.com/obaranek/venue_tracker.git
+- cd venue_tracker
+- npm install && npm run
+
+* Usage
+** Sign Up User
+***  POST: localhost:5000/api/users/signup
+**** req
+***** body { name, email, password }
+**** res
+***** { userId, email, token }
+** Login User
+***  POST: localhost:5000/api/users/login
+**** req
+***** body { email, password }
+**** res
+***** { userId, email, token }
+
+* Venues
+
+** Get Venues by User ID
+*** GET: localhost:5000/api/venues/:uid
+**** header
+***** { Authorization: "Bearer ${ token }" }
+*** res
+***** { venue }
+
+** Get Venue Followers
+*** GET: localhost:5000/api/venues/:vid/followers
+**** header
+***** { Authorization: "Bearer ${ token }" }
+**** res
+***** { venue }
+
+** Get all venues
+*** GET: localhost:5000/api/venues/
+
+** Create a venue
+*** POST: localhost:5000/api/venues/create
+**** header
+***** { Authorization: "Bearer ${ token }" }
+**** req
+***** body { name, adress, max }
+**** res
+***** { venue }
+
+** Enter a venue
+*** POST: localhost:5000/api/venues/:uid/enter
+**** header
+***** { Authorization: "Bearer ${ token }"}
+**** req
+***** { venue }
+**** res
+***** { msg }
+
+** Leave a venue
+*** POST: localhost:5000/api/venues/:uid/leave
+**** header
+***** { Authorization: "Bearer ${ token }"}
+**** req
+***** { venue }
+**** res
+***** { msg }
+
+** Follow a venue
+*** POST: localhost:5000/api/venues/:uid/follow
+**** header
+***** { Authorization: "Bearer ${ token }"}
+**** req
+***** { venue }
+**** res
+***** { msg }
+
+** Unfollow a venue
+*** POST: localhost:5000/api/venues/:uid/unfollow
+**** header
+***** { Authorization: "Bearer ${ token }"}
+**** req
+***** { venue }
+**** res
+***** { msg }
